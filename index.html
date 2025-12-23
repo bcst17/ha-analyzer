@@ -136,7 +136,7 @@
                         </div>
                     </div>
 
-                    <!-- Failed Keys Card (New: Light Style, Same Font Size) -->
+                    <!-- Failed Keys Card (Optimized: Now Light Style) -->
                     <div class="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm relative">
                         <div class="flex items-center gap-2 mb-4">
                             <div class="bg-rose-100 p-2 rounded-xl text-rose-600"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
@@ -227,7 +227,7 @@
                        </div>
                     </div>
 
-                    <!-- Action Plan (AP) Summary Card - The new requirement -->
+                    <!-- Action Plan (AP) Summary Card -->
                     <div class="bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-8 opacity-20"><i data-lucide="flag" class="w-24 h-24 text-white"></i></div>
                         <div class="relative z-10">
@@ -339,26 +339,27 @@
             }
         }
 
-        async function fetchWithRetry(url, options, retries = 3) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                return await response.json();
-            } catch (err) {
-                if (retries > 0) {
-                    await new Promise(r => setTimeout(r, 1000));
-                    return fetchWithRetry(url, options, retries - 1);
+        async function fetchWithRetry(url, options, retries = 5) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
                 }
-                throw err;
             }
         }
 
         analyzeBtn.addEventListener('click', async () => {
             const text = logInput.value.trim();
             const key = apiKeyInput.value.trim();
+            const apiKey = key || "";
 
             if (!text) return alert("請輸入日誌內容");
-            if (!key) return alert("請輸入 API Key");
 
             emptyState.classList.add('hidden');
             dashboardContent.classList.add('hidden');
@@ -366,7 +367,7 @@
             errorMsg.classList.add('hidden');
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${key}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
                 const data = await fetchWithRetry(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -386,7 +387,7 @@
             } catch (err) {
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
-                errorText.textContent = err.message;
+                errorText.textContent = "分析失敗，請檢查 API Key 或網路連線。";
             }
         });
 
