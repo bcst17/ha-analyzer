@@ -57,9 +57,7 @@
         
         <div class="mb-8 text-center max-w-2xl mx-auto">
             <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
-            <p class="text-slate-500 text-sm">
-                此工具專為助聽器選配督導設計。透過輸入服務日誌，AI 將自動拆解客戶特質、檢核驗證缺口，並生成對同仁的指導方針與對客話術。
-            </p>
+            <p class="text-slate-500 text-sm italic">專業督導導向：從日誌中挖掘「未成交真相」，部署「下次必勝計畫」。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -115,13 +113,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Service Score Card -->
                         <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-6 opacity-5"><i data-lucide="star" class="w-24 h-24 text-emerald-500"></i></div>
                             <div class="flex items-center gap-6 relative z-10">
                                 <div class="h-20 w-20 shrink-0">
                                     <canvas id="scoreChart"></canvas>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">服務完整度</p>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">流程完備度</p>
                                     <h3 class="text-4xl font-black text-emerald-600" id="score-val">0<span class="text-xl text-slate-300 ml-1">/ 5</span></h3>
                                     <p class="text-[10px] text-slate-500 mt-1 font-bold" id="score-text">服務品質評估</p>
                                 </div>
@@ -130,7 +127,6 @@
 
                         <!-- Conversion Chance Card -->
                         <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="trending-up" class="w-24 h-24 text-indigo-500"></i></div>
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">成交潛力</p>
@@ -140,6 +136,17 @@
                             <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
                                 <div id="conversion-bar" class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Failed Keys Card (New: Light Style) -->
+                    <div class="bg-rose-50/50 border border-rose-100 p-6 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i data-lucide="x-circle" class="w-20 h-20 text-rose-500"></i></div>
+                        <p class="text-rose-600 text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-3 h-3"></i> 診斷結果：未成交關鍵因素
+                        </p>
+                        <div id="failed-keys-container" class="space-y-2 relative z-10">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
 
@@ -170,7 +177,7 @@
 
                                 <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
                                     <p class="text-[10px] font-black text-emerald-600 uppercase mb-2">💡 我要請同仁怎麼做 (督導指令)</p>
-                                    <p id="staff-action-text" class="text-sm font-bold text-slate-800">正在生成針對該人格的應對策略...</p>
+                                    <p id="staff-action-text" class="text-sm font-bold text-slate-800 leading-relaxed">...</p>
                                 </div>
                             </div>
                         </div>
@@ -179,7 +186,7 @@
                         <div class="bg-white rounded-[2.5rem] border border-slate-200 p-6 shadow-sm">
                             <div class="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
                                 <div class="bg-emerald-100 p-2 rounded-xl text-emerald-600"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
-                                <h4 class="font-black text-slate-800">驗證工具執行與補測計畫</h4>
+                                <h4 class="font-black text-slate-800">驗證工具補測計畫 (補強專業度)</h4>
                             </div>
                             <div class="space-y-4" id="checks-container">
                                 <!-- Checks injected here -->
@@ -187,27 +194,35 @@
                         </div>
                     </div>
 
-                    <!-- Summary Card -->
-                    <div class="bg-indigo-950 text-white p-8 rounded-[2.5rem] relative overflow-hidden shadow-lg shadow-indigo-200">
-                        <i data-lucide="quote" class="absolute -bottom-6 -right-6 text-white/5 w-40 h-40"></i>
-                        <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2">督導關鍵總結</p>
-                        <h3 class="text-xl font-bold leading-relaxed relative z-10 italic" id="summary-text">...</h3>
-                    </div>
-
-                    <!-- Strategy & Scripts -->
+                    <!-- Strategy & Scripts (The "Future" Section) -->
                     <div class="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
                         <div class="flex items-center gap-2 mb-6">
-                            <div class="bg-indigo-100 p-2 rounded-xl text-indigo-600"><i data-lucide="message-square" class="w-5 h-5"></i></div>
-                            <h4 class="font-black text-slate-800">對客成交策略與追蹤</h4>
+                            <div class="bg-indigo-100 p-2 rounded-xl text-indigo-600"><i data-lucide="rocket" class="w-5 h-5"></i></div>
+                            <h4 class="font-black text-slate-800">未來式：下次成交部署計畫</h4>
                         </div>
                         
-                        <div class="bg-slate-900 rounded-3xl p-6 text-white mb-8 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">關鍵說服話術</p>
-                            <p id="sales-script" class="text-lg font-bold italic leading-relaxed relative z-10">...</p>
+                        <!-- Recommendation Detail -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            <div class="md:col-span-12">
+                                <div class="bg-indigo-600 rounded-3xl p-6 text-white relative overflow-hidden shadow-lg shadow-indigo-100">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i data-lucide="message-circle" class="w-4 h-4 text-indigo-200"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-200">建議對客話術 (必殺技)</span>
+                                    </div>
+                                    <p id="sales-script" class="text-xl font-bold leading-relaxed mb-6">...</p>
+                                    
+                                    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <i data-lucide="help-circle" class="w-3 h-3 text-indigo-200"></i>
+                                            <span class="text-[10px] font-black uppercase text-indigo-200">為什麼要這麼說？(背後邏輯)</span>
+                                        </div>
+                                        <p id="script-logic" class="text-sm text-indigo-50 font-medium leading-relaxed">...</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="followup-container">
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4" id="followup-container">
                             <!-- Follow up cards injected here -->
                         </div>
                     </div>
@@ -216,7 +231,7 @@
                     <div class="bg-white rounded-[2.5rem] border border-slate-200 p-6 shadow-sm">
                          <div class="flex items-center justify-between mb-4 px-2">
                             <h4 class="font-black text-slate-800 text-sm flex items-center gap-2">
-                                <i data-lucide="target" class="w-4 h-4 text-rose-500"></i> 流程缺口修正
+                                <i data-lucide="target" class="w-4 h-4 text-rose-500"></i> 流程細節修正
                             </h4>
                         </div>
                         <div id="gaps-container" class="space-y-3">
@@ -245,38 +260,39 @@
         const errorText = document.getElementById('error-text');
 
         const systemPrompt = `
-            你是一位助聽器領域的資深督導。請針對工作日誌進行精確分析，並給予同仁具體的執行建議。
+            你是一位助聽器領域的資深督導。請針對工作日誌進行「未來式」的精確部署，幫助同仁解決目前無法成交的困境。
             嚴格回傳 JSON 格式 (不要有 markdown code block)：
             {
               "service_score": 數字(1-5),
               "conversion_chance": 數字(1-100),
-              "summary": "一句話重點總結",
+              "failed_keys": ["關鍵因素1(如：對產品力沒信心)", "關鍵因素2", "關鍵因素3"],
               "user_profile": {
                 "disc": "D/I/S/C",
                 "personality": "性格關鍵字",
                 "core_need": "核心需求描述",
-                "staff_instruction": "給同仁的具體應對方針：如何跟這種特質的人溝通 (約30字)"
+                "staff_instruction": "督導指令：應對此特質同仁應強調的動作要點 (約30字)"
               },
               "professional_checks": [
                 { 
                   "label": "REM 真耳分析", 
                   "executed": boolean, 
-                  "next_step_plan": "若未執行：下次到店應如何運用此工具說服客人(20字)。若已執行：如何加強呈現價值。" 
+                  "next_step_plan": "若未執行：下次到店如何應用REM來說服客人(強調數據公信力)。若已執行：如何將數據轉化為成交話術。" 
                 },
                 { 
                   "label": "SRT 單字詞測試", 
                   "executed": boolean, 
-                  "next_step_plan": "若未執行：下次到店補測的重點與溝通引導(20字)。若已執行：如何解讀分數。" 
+                  "next_step_plan": "若未執行：下次補測如何運用「聽得見不代表聽得清」引發急迫感。若已執行：如何解釋分數加強信心。" 
                 },
                 { 
                   "label": "情境模擬演練", 
                   "executed": boolean, 
-                  "next_step_plan": "若未執行：如何針對生活場景進行補強演示(20字)。若已執行：優化方向。" 
+                  "next_step_plan": "針對客戶痛點的具體模擬計畫 (20字)。" 
                 }
               ],
-              "gaps": [{"issue": "缺口標題", "action": "具體修正動作"}],
+              "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
-                "script": "現場必殺話術",
+                "script": "針對下次到店設計的具體必殺話術",
+                "logic": "為什麼要這樣說？(結合客戶漏單原因與人格特質進行深度解析)",
                 "follow_up": {
                   "t24h": { "action": "動作", "sms": "簡訊內容" },
                   "d7": { "action": "動作", "sms": "簡訊內容" },
@@ -364,7 +380,18 @@
             document.getElementById('score-val').innerHTML = `${data.service_score}<span class="text-xl text-slate-300 ml-1">/ 5</span>`;
             document.getElementById('conversion-val').innerHTML = `${data.conversion_chance}<span class="text-xl text-slate-300 ml-1">%</span>`;
             document.getElementById('conversion-bar').style.width = `${data.conversion_chance}%`;
-            document.getElementById('summary-text').textContent = data.summary;
+
+            // Failed Keys Injection
+            const failedContainer = document.getElementById('failed-keys-container');
+            failedContainer.innerHTML = '';
+            data.failed_keys.forEach(key => {
+                failedContainer.innerHTML += `
+                    <div class="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-rose-100">
+                        <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                        <p class="text-sm font-bold text-rose-700">${key}</p>
+                    </div>
+                `;
+            });
 
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if (scoreChartInstance) scoreChartInstance.destroy();
@@ -382,7 +409,7 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
             });
 
-            // 2. Profile & Staff Instruction
+            // 2. Profile & Instruction
             document.getElementById('disc-badge').textContent = data.user_profile.disc;
             document.getElementById('personality-text').textContent = data.user_profile.personality;
             document.getElementById('needs-text').textContent = data.user_profile.core_need;
@@ -403,21 +430,23 @@
                             <div class="flex-1">
                                 <div class="flex justify-between items-center">
                                     <h5 class="font-bold text-slate-800 text-sm">${check.label}</h5>
-                                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${isDone ? '已完備' : '待執行'}</span>
+                                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${isDone ? '流程已做' : '必須補測'}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="pl-14">
-                            <p class="text-[10px] font-black text-slate-400 uppercase mb-1">${isDone ? '優化建議' : '下次補測執行指令'}</p>
-                            <p class="text-xs text-slate-600 font-bold">${check.next_step_plan}</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase mb-1">對客應用指令</p>
+                            <p class="text-xs text-slate-600 font-bold leading-relaxed">${check.next_step_plan}</p>
                         </div>
                     </div>
                 `;
                 checksContainer.innerHTML += html;
             });
 
-            // 4. Strategy & Scripts
+            // 4. Future Strategy
             document.getElementById('sales-script').textContent = `「${data.strategy.script}」`;
+            document.getElementById('script-logic').textContent = data.strategy.logic;
+            
             const followupContainer = document.getElementById('followup-container');
             followupContainer.innerHTML = '';
             const times = { t24h: '24H 關懷', d7: '7D 追蹤', d14: '14D 轉介' };
@@ -426,7 +455,6 @@
                     <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col h-full">
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase">${times[key]}</span>
-                            <i data-lucide="clock" class="w-3 h-3 text-slate-300"></i>
                         </div>
                         <p class="text-xs font-bold text-slate-800 mb-3">${info.action}</p>
                         <div class="mt-auto relative">
