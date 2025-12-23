@@ -70,7 +70,7 @@
                 <i data-lucide="database" class="w-3 h-3"></i> 已載入 2024-2025 年度日誌數據
             </div>
             <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
-            <p class="text-slate-500 text-sm italic">結合歷史數據，分析客情並設定行動方案。</p>
+            <p class="text-slate-500 text-sm italic">結合跨年度歷史數據，精準預判客情並部署行動方案。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -98,6 +98,13 @@
 
             <!-- Right Column: Dashboard -->
             <div id="right-column" class="lg:col-span-8">
+                
+                <!-- PDF Export Trigger (Hidden during Print) -->
+                <div id="export-bar" class="hidden mb-6 flex justify-end no-print">
+                    <button id="pdf-btn" class="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-700 transition-all shadow-lg">
+                        <i data-lucide="download" class="w-4 h-4"></i> 匯出分析報告 (PDF)
+                    </button>
+                </div>
 
                 <!-- Empty State -->
                 <div id="empty-state" class="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-300 p-10">
@@ -105,6 +112,7 @@
                         <i data-lucide="file-search" class="w-16 h-16 opacity-20 text-slate-400"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-400 mb-2">等待數據輸入</h3>
+                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結歷史日誌進行智慧分析。</p>
                 </div>
 
                 <!-- Loading State -->
@@ -115,7 +123,7 @@
                             <i data-lucide="brain" class="w-6 h-6 text-indigo-600 animate-pulse"></i>
                         </div>
                     </div>
-                    <p class="mt-6 font-bold text-indigo-900">正在進行AI分析<span class="loading-dots"></span></p>
+                    <p class="mt-6 font-bold text-indigo-900">正在進行智慧分析<span class="loading-dots"></span></p>
                 </div>
 
                 <!-- Dashboard Content -->
