@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Supervisor - 專業日誌分析儀 (含歷史大數據優化)</title>
+    <title>AI Supervisor - 專業日誌分析儀 (含 2024-2025 歷史數據優化)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -25,12 +25,23 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* PDF Export Styles */
+        @media print {
+            nav, #left-column, #analyze-btn, #api-key-input, .no-print { display: none !important; }
+            body { background-color: white; }
+            main { max-width: 100%; padding: 0; margin: 0; }
+            .lg\:col-span-8 { width: 100% !important; grid-column: span 12 / span 12 !important; }
+            .animate-fade-in { animation: none !important; }
+            .bg-slate-900 { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; }
+            .rounded-\[3rem\], .rounded-\[2\.5rem\], .rounded-\[2rem\] { border-radius: 1rem !important; }
+        }
     </style>
 </head>
 <body class="text-slate-800">
 
     <!-- Navbar -->
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-3">
@@ -56,16 +67,16 @@
         
         <div class="mb-8 text-center max-w-2xl mx-auto">
             <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                <i data-lucide="database" class="w-3 h-3"></i> 已載入年度日誌知識庫
+                <i data-lucide="database" class="w-3 h-3"></i> 已載入 2024-2025 年度日誌數據
             </div>
             <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
-            <p class="text-slate-500 text-sm italic">專業督導導向：結合年度歷史數據，精準預判客情並部署行動方案。</p>
+            <p class="text-slate-500 text-sm italic">專業督導導向：結合跨年度歷史大數據，精準預判客情並部署行動方案。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             <!-- Left Column: Input -->
-            <div class="lg:col-span-4 space-y-6">
+            <div id="left-column" class="lg:col-span-4 space-y-6">
                 <div class="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm sticky top-24">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-bold text-slate-700 flex items-center gap-2">
@@ -86,15 +97,22 @@
             </div>
 
             <!-- Right Column: Dashboard -->
-            <div class="lg:col-span-8">
+            <div id="right-column" class="lg:col-span-8">
                 
+                <!-- PDF Export Trigger (Hidden during Print) -->
+                <div id="export-bar" class="hidden mb-6 flex justify-end no-print">
+                    <button id="pdf-btn" class="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-700 transition-all shadow-lg">
+                        <i data-lucide="download" class="w-4 h-4"></i> 匯出分析報告 (PDF)
+                    </button>
+                </div>
+
                 <!-- Empty State -->
                 <div id="empty-state" class="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-300 p-10">
                     <div class="p-6 bg-slate-50 rounded-full mb-6">
                         <i data-lucide="file-search" class="w-16 h-16 opacity-20 text-slate-400"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-400 mb-2">等待數據輸入</h3>
-                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合年度 Excel 日誌進行對比分析。</p>
+                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合 2024 與 2025 歷史日誌進行跨年度分析。</p>
                 </div>
 
                 <!-- Loading State -->
@@ -105,7 +123,7 @@
                             <i data-lucide="brain" class="w-6 h-6 text-indigo-600 animate-pulse"></i>
                         </div>
                     </div>
-                    <p class="mt-6 font-bold text-indigo-900">正在對比歷史趨勢中<span class="loading-dots"></span></p>
+                    <p class="mt-6 font-bold text-indigo-900">正在對比跨年度歷史趨勢中<span class="loading-dots"></span></p>
                 </div>
 
                 <!-- Dashboard Content -->
@@ -243,7 +261,7 @@
                             <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="text-[10px] font-black text-indigo-300 uppercase tracking-widest">可複製回饋內容</span>
-                                    <button id="copy-ap-btn" class="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all">
+                                    <button id="copy-ap-btn" class="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all no-print">
                                         <i data-lucide="copy" class="w-3 h-3"></i> 複製 AP 全文
                                     </button>
                                 </div>
@@ -283,29 +301,30 @@
         const logInput = document.getElementById('log-input');
         const apiKeyInput = document.getElementById('api-key-input');
         const analyzeBtn = document.getElementById('analyze-btn');
+        const pdfBtn = document.getElementById('pdf-btn');
+        const exportBar = document.getElementById('export-bar');
         const loadingState = document.getElementById('loading-state');
         const emptyState = document.getElementById('empty-state');
         const dashboardContent = document.getElementById('dashboard-content');
         const errorMsg = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
 
-        // 模擬背景大數據知識庫摘要 (由 AI 讀取檔案後轉換)
+        // 整合 2024 與 2025 大數據知識庫摘要
         const historicalInsights = `
-            年度趨勢摘要：
-            1. 成交關鍵：身障手冊申請進度、長輩對耳內機 vs 耳掛型的外觀堅持、家人決策支持度。
-            2. 失敗主因：價格考量（尤其是雙耳選配時）、失智或認知退化導致配戴困難、回診時間不確定。
-            3. 特殊客群：睡眠中心轉介者通常需長線追蹤，對價格較敏感。
-            4. 常用型號：I3, Z1, I2.3 等。
+            2024-2025 年度趨勢分析：
+            1. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短（僅戴1-2次即放棄）、辨識力極差者對助聽器過高期待、APAP 試用後因朋友介紹它牌流失。
+            2. 2025 成交關鍵：身障手冊申請進度掌握、長輩對耳內機 vs 耳掛型的外觀堅持、家人決策支持度。
+            3. 特殊客群：睡眠中心轉介者（如台大/亞東）對價格較敏感，需長線追蹤；失智症患者需加強家人教育，避免配戴不適應或遺失。
+            4. 常用型號：I3, Z1, I2.3, OPN S2 等。
         `;
 
         const systemPrompt = `
-            你是一位助聽器與正壓呼吸器領域的資深督導。
-            你有權存取「年度歷史工作日誌大數據」(摘要內容：${historicalInsights})。
+            你是一位助聽器與正壓呼吸器領域的頂尖督導。
+            你有權存取「2024-2025 跨年度歷史日誌大數據」(摘要：${historicalInsights})。
             
-            請針對輸入的工作日誌進行分析，並與歷史案例進行比對。
-            如果輸入的案例與歷史失敗案例（如外觀考量、價格猶豫）雷同，請特別在 "staff_instruction" 指出。
+            請分析輸入的日誌。如果該案例與 2024 年常見的「多人聚會失敗」或「短期放棄」雷同，請務必在 "staff_instruction" 中提出預警。
             
-            嚴格回傳 JSON 格式：
+            嚴格回傳 JSON：
             {
               "service_score": 數字(1-5),
               "conversion_chance": 數字(1-100),
@@ -314,7 +333,7 @@
                 "disc": "D/I/S/C",
                 "personality": "性格關鍵字",
                 "core_need": "核心需求描述",
-                "staff_instruction": "督導對此同仁的叮嚀 (請結合歷史數據給出具體建議)"
+                "staff_instruction": "督導叮嚀 (需結合 2024-2025 數據給出具體且具權威性的建議)"
               },
               "professional_checks": [
                 { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
@@ -324,7 +343,7 @@
               "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
                 "script": "對客話術 (需針對客戶痛點)",
-                "logic": "為什麼要這麼說 (結合客戶漏單原因與人格特質)",
+                "logic": "為什麼要這麼說 (分析客戶人格特質與潛在流失風險)",
                 "follow_up": {
                   "t24h": { "action": "動作", "sms": "..." },
                   "d7": { "action": "動作", "sms": "..." },
@@ -381,6 +400,7 @@
 
             emptyState.classList.add('hidden');
             dashboardContent.classList.add('hidden');
+            exportBar.classList.add('hidden');
             loadingState.classList.remove('hidden');
             errorMsg.classList.add('hidden');
 
@@ -401,12 +421,18 @@
 
                 loadingState.classList.add('hidden');
                 dashboardContent.classList.remove('hidden');
+                exportBar.classList.remove('hidden');
                 dashboardContent.scrollIntoView({ behavior: 'smooth' });
             } catch (err) {
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
-                errorText.textContent = "分析失敗，請檢查 API Key 或日誌格式。";
+                errorText.textContent = "分析失敗，請檢查 API Key。";
             }
+        });
+
+        // 匯出 PDF 功能
+        pdfBtn.addEventListener('click', () => {
+            window.print();
         });
 
         function renderDashboard(data) {
@@ -448,7 +474,7 @@
                         borderWidth: 0,
                     }]
                 },
-                options: { cutout: '80%', plugins: { legend: { display: false } } }
+                options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
             document.getElementById('disc-badge').textContent = data.user_profile.disc;
@@ -484,7 +510,7 @@
                         <p class="text-[11px] font-bold text-slate-800 mb-2">${v.action}</p>
                         <div class="bg-white p-2 border border-slate-200 rounded-lg text-[10px] text-slate-600 italic relative pr-8">
                             ${v.sms}
-                            <button onclick="copyToClipboard('${v.sms.replace(/'/g, "\\'")}', this)" class="absolute top-1 right-1 p-1 hover:text-indigo-600"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                            <button onclick="copyToClipboard('${v.sms.replace(/'/g, "\\'")}', this)" class="absolute top-1 right-1 p-1 hover:text-indigo-600 no-print"><i data-lucide="copy" class="w-3 h-3"></i></button>
                         </div>
                     </div>
                 `;
