@@ -3,435 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Supervisor PRO - 全方位督導分析儀</title>
+    <title>AI Supervisor - 專業日誌分析儀 (含 2024-2025 歷史數據優化)</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F0F4F8; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .input-panel { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
+        .chart-container { position: relative; height: 180px; width: 100%; }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
         .loading-dots:after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
         
-        #image-paste-zone {
-            transition: all 0.2s ease;
-            border: 2px dashed #CBD5E1;
-        }
-        #image-paste-zone.active {
-            border-color: #6366F1;
-            background-color: #EEF2FF;
-        }
-        .preview-img {
-            max-height: 180px;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* PDF Export Styles */
+        @media print {
+            nav, #left-column, #analyze-btn, #api-key-input, .no-print { display: none !important; }
+            body { background-color: white; }
+            main { max-width: 100%; padding: 0; margin: 0; }
+            .lg\:col-span-8 { width: 100% !important; grid-column: span 12 / span 12 !important; }
+            .animate-fade-in { animation: none !important; }
+            .bg-slate-900 { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; }
+            .rounded-\[3rem\], .rounded-\[2\.5rem\], .rounded-\[2rem\] { border-radius: 1rem !important; }
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased">
+<body class="text-slate-800">
 
     <!-- Navbar -->
-    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200">
-        <div class="max-w-screen-2xl mx-auto px-6 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br from-indigo-600 to-violet-600 p-2 rounded-xl text-white shadow-lg">
-                    <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 p-2 rounded-xl text-white">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-black text-xl tracking-tight text-slate-900">HA <span class="text-indigo-600">Supervisor PRO</span></span>
                 </div>
-                <h1 class="font-black text-xl tracking-tighter text-slate-900 uppercase">Supervisor <span class="text-indigo-600">Intelligence</span></h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <input type="password" id="api-key-input" placeholder="Gemini API Key" class="bg-slate-100 border-none text-xs rounded-full py-2 px-4 w-48 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all">
-                <div class="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    2024-25 DATABASE CONNECTED
+                <div class="flex items-center gap-3">
+                    <div class="relative group">
+                        <input type="password" id="api-key-input" placeholder="輸入 Gemini API Key" class="bg-slate-100 border border-slate-200 text-xs rounded-full py-1.5 px-4 w-40 focus:w-64 transition-all outline-none focus:ring-2 focus:ring-indigo-500/20">
+                        <div class="absolute right-3 top-1.5 text-slate-400 group-hover:text-indigo-500 cursor-pointer">
+                            <i data-lucide="key" class="w-3 h-3"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-screen-2xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <!-- Left: Input & History Meta -->
-        <div class="lg:col-span-4 space-y-6">
-            <div class="glass-card bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 border border-slate-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
-                        <i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i> 工作日誌輸入
-                    </h2>
-                </div>
-                
-                <textarea id="log-input" class="w-full h-72 p-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm leading-relaxed focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none resize-none" placeholder="貼上當日服務細節、客戶主訴、測試過程..."></textarea>
-                
-                <!-- Image Paste Zone -->
-                <div class="mt-4">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">聽力圖貼上 (選填)</label>
-                    <div id="image-paste-zone" class="relative overflow-hidden min-h-[100px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 cursor-pointer transition-all">
-                        <div id="image-placeholder" class="text-center p-4">
-                            <i data-lucide="image" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
-                            <p class="text-[10px] text-slate-400 font-bold italic">直接 Ctrl+V 貼上截圖</p>
-                        </div>
-                        <div id="image-preview-container" class="hidden relative p-2 w-full flex flex-col items-center">
-                            <img id="img-preview" src="" class="preview-img" alt="聽力圖預覽">
-                            <button id="remove-img" class="mt-2 text-[10px] font-black text-rose-500 hover:underline">移除圖片</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="analyze-btn" class="w-full mt-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-indigo-600 transition-all active:scale-95 shadow-lg group">
-                    <i data-lucide="wand-2" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
-                    開始 AI 督導診斷
-                </button>
+        <div class="mb-8 text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                <i data-lucide="database" class="w-3 h-3"></i> 已載入 2024-2025 年度日誌數據
             </div>
-
-            <!-- Context Hint -->
-            <div class="bg-indigo-50 rounded-3xl p-6 border border-indigo-100">
-                <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-3">督導背景知識庫</h4>
-                <p class="text-xs text-indigo-900/70 leading-relaxed font-medium italic">
-                    系統已載入 2024-2025 年度所有成交與流失案例。AI 會自動比對「多人環境抱怨」、「長輩品牌偏好」以及「家人支持度低」等歷史關鍵流失因子。
-                </p>
-            </div>
+            <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
+            <p class="text-slate-500 text-sm italic">專業督導導向：結合跨年度歷史大數據，精準預判客情並部署行動方案。</p>
         </div>
 
-        <!-- Right: Diagnostic Dashboard -->
-        <div class="lg:col-span-8 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Welcome/Empty State -->
-            <div id="empty-state" class="h-full min-h-[600px] flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-300">
-                <i data-lucide="layout-dashboard" class="w-16 h-16 opacity-10 mb-4"></i>
-                <p class="font-bold tracking-widest uppercase">等待數據輸入中...</p>
-            </div>
+            <!-- Left Column: Input -->
+            <div id="left-column" class="lg:col-span-4 space-y-6">
+                <div class="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm sticky top-24">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold text-slate-700 flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-500"></i> 日誌輸入
+                        </h2>
+                        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-full text-slate-400 font-bold uppercase tracking-widest">Input</span>
+                    </div>
+                    <textarea id="log-input" class="w-full h-[400px] p-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none leading-relaxed text-slate-700 placeholder-slate-400" placeholder="請在此貼上完整的服務日誌內容..."></textarea>
+                    
+                    <div id="error-message" class="hidden mt-4 p-4 bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold rounded-2xl flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i> <span id="error-text"></span>
+                    </div>
 
-            <!-- Loading -->
-            <div id="loading-state" class="hidden h-full min-h-[600px] flex flex-col items-center justify-center bg-white rounded-[3rem]">
-                <div class="relative">
-                    <div class="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                    <i data-lucide="cpu" class="w-6 h-6 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+                    <button id="analyze-btn" class="w-full mt-6 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black flex justify-center items-center gap-3 hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 text-lg group">
+                        <span class="flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> 深度診斷</span>
+                    </button>
                 </div>
-                <p class="mt-6 font-black text-slate-800 tracking-widest uppercase text-sm italic">AI 正在串接歷史數據並分析聽力圖<span class="loading-dots"></span></p>
             </div>
 
-            <!-- Dashboard Content -->
-            <div id="dashboard-content" class="hidden space-y-6">
+            <!-- Right Column: Dashboard -->
+            <div id="right-column" class="lg:col-span-8">
                 
-                <!-- Top Row: Scores -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Service Score -->
-                    <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
-                        <div class="w-24 h-24 mb-3 relative">
-                            <canvas id="scoreChart"></canvas>
-                            <div class="absolute inset-0 flex items-center justify-center font-black text-2xl text-slate-800" id="score-val">0</div>
-                        </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">流程完整度</span>
-                    </div>
-
-                    <!-- Conversion Chance -->
-                    <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-center">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">成交潛力指標</span>
-                            <span id="chance-badge" class="px-2 py-0.5 rounded-full text-[9px] font-black"></span>
-                        </div>
-                        <div class="text-4xl font-black text-slate-900 mb-3" id="conversion-val">0%</div>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div id="conversion-bar" class="h-full bg-indigo-600 transition-all duration-1000" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Audio Graph Insight (Dynamic) -->
-                    <div id="audio-card" class="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-xl flex flex-col justify-center relative overflow-hidden">
-                        <div class="relative z-10">
-                            <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">聽力判讀分析</h4>
-                            <p id="audio-summary" class="text-xs leading-relaxed font-bold text-slate-300 italic">尚未提供聽力圖...</p>
-                        </div>
-                        <i data-lucide="waves" class="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 rotate-12"></i>
-                    </div>
+                <!-- PDF Export Trigger (Hidden during Print) -->
+                <div id="export-bar" class="hidden mb-6 flex justify-end no-print">
+                    <button id="pdf-btn" class="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-700 transition-all shadow-lg">
+                        <i data-lucide="download" class="w-4 h-4"></i> 匯出分析報告 (PDF)
+                    </button>
                 </div>
 
-                <!-- Middle Row: Personality & Emotional Radar -->
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                    <!-- Radar Chart -->
-                    <div class="md:col-span-5 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">客情多維度分析</h4>
-                        <div class="h-48 flex items-center justify-center">
-                            <canvas id="radarChart"></canvas>
-                        </div>
+                <!-- Empty State -->
+                <div id="empty-state" class="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-300 p-10">
+                    <div class="p-6 bg-slate-50 rounded-full mb-6">
+                        <i data-lucide="file-search" class="w-16 h-16 opacity-20 text-slate-400"></i>
                     </div>
-
-                    <!-- User Profile Card -->
-                    <div class="md:col-span-7 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                        <div class="flex items-center gap-4">
-                            <div id="disc-avatar" class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black shadow-inner">?</div>
-                            <div>
-                                <h3 class="font-black text-xl text-slate-800" id="profile-name">分析中...</h3>
-                                <p class="text-xs text-slate-400 font-bold" id="profile-disc">DISC Personality Type</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="p-4 bg-slate-50 rounded-2xl">
-                                <span class="text-[9px] font-black text-slate-400 uppercase">性格特徵</span>
-                                <p class="text-xs font-bold text-slate-700 mt-1" id="profile-trait">--</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-2xl">
-                                <span class="text-[9px] font-black text-slate-400 uppercase">核心需求</span>
-                                <p class="text-xs font-bold text-indigo-600 mt-1" id="profile-need">--</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h3 class="text-xl font-black text-slate-400 mb-2">等待數據輸入</h3>
+                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合 2024 與 2025 歷史日誌進行跨年度分析。</p>
                 </div>
 
-                <!-- Bottom Row: Strategy & Script -->
-                <div class="bg-indigo-600 rounded-[3rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden">
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-6">
-                            <i data-lucide="message-circle" class="w-6 h-6"></i>
-                            <h3 class="font-black text-xl">推薦成交話術與引導邏輯</h3>
+                <!-- Loading State -->
+                <div id="loading-state" class="hidden h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[3rem] border border-slate-100 p-10">
+                    <div class="relative">
+                        <div class="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                            <i data-lucide="brain" class="w-6 h-6 text-indigo-600 animate-pulse"></i>
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                            <div>
-                                <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-3">精選金句</p>
-                                <blockquote id="sales-script" class="text-2xl font-black leading-tight mb-4 tracking-tight">「...」</blockquote>
+                    </div>
+                    <p class="mt-6 font-bold text-indigo-900">正在對比跨年度歷史趨勢中<span class="loading-dots"></span></p>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div id="dashboard-content" class="hidden space-y-6 animate-fade-in">
+                    
+                    <!-- KPI Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                            <div class="flex items-center gap-6 relative z-10">
+                                <div class="h-16 w-16 shrink-0">
+                                    <canvas id="scoreChart"></canvas>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">流程完備度</p>
+                                    <h3 class="text-2xl font-black text-emerald-600" id="score-val">0/5</h3>
+                                    <p class="text-[10px] text-slate-500 mt-1 font-bold" id="score-text">服務品質評估</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">成交潛力 (預測)</p>
+                                    <h3 class="text-2xl font-black text-indigo-600" id="conversion-val">0%</h3>
+                                </div>
+                                <div id="trend-indicator" class="text-[10px] font-bold px-2 py-1 rounded-full"></div>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+                                <div id="conversion-bar" class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Failed Keys Card -->
+                    <div class="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm relative">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="bg-rose-100 p-2 rounded-xl text-rose-600"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                            <h4 class="font-black text-slate-800">診斷結果：未成交關鍵因素</h4>
+                        </div>
+                        <div id="failed-keys-container" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Profile & Checks Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-[2.5rem] border border-slate-200 p-6 shadow-sm">
+                            <div class="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                                <div class="bg-amber-100 p-2 rounded-xl text-amber-600"><i data-lucide="brain" class="w-5 h-5"></i></div>
+                                <h4 class="font-black text-slate-800">用戶畫像與指導方針</h4>
                             </div>
                             <div class="space-y-4">
-                                <div class="bg-white/10 p-5 rounded-3xl border border-white/10">
-                                    <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">督導指令 (重點叮嚀)</p>
-                                    <p id="supervisor-instruction" class="text-sm font-bold leading-relaxed">分析中...</p>
+                                <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                                    <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
+                                        -
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase text-slate-400">DISC 特質</p>
+                                        <p id="personality-text" class="text-sm font-bold text-slate-700">...</p>
+                                    </div>
                                 </div>
-                                <div class="bg-white/10 p-5 rounded-3xl border border-white/10">
-                                    <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">話術邏輯</p>
-                                    <p id="script-logic" class="text-sm font-medium text-indigo-100 italic">分析中...</p>
+                                <div class="bg-indigo-100/50 p-4 rounded-2xl border border-indigo-200">
+                                    <p class="text-[10px] font-black text-indigo-700 uppercase mb-2">核心需求</p>
+                                    <p id="needs-text" class="text-sm font-bold text-slate-800 italic">...</p>
+                                </div>
+                                <div class="bg-emerald-100/50 p-4 rounded-2xl border border-emerald-200">
+                                    <p class="text-[10px] font-black text-emerald-700 uppercase mb-2">💡 我要請同仁怎麼做 (督導指令)</p>
+                                    <p id="staff-action-text" class="text-sm font-bold text-slate-800 leading-relaxed">...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-[2.5rem] border border-slate-200 p-6 shadow-sm">
+                            <div class="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                                <div class="bg-emerald-100 p-2 rounded-xl text-emerald-600"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                                <h4 class="font-black text-slate-800">驗證工具補測計畫 (補強專業度)</h4>
+                            </div>
+                            <div class="space-y-4" id="checks-container">
+                                <!-- Checks injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy & Scripts -->
+                    <div class="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="bg-indigo-100 p-2 rounded-xl text-indigo-600"><i data-lucide="rocket" class="w-5 h-5"></i></div>
+                            <h4 class="font-black text-slate-800">未來式：下次成交部署計畫</h4>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            <div class="md:col-span-12">
+                                <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <i data-lucide="message-circle" class="w-4 h-4 text-indigo-500"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">建議對客話術 (必殺技)</span>
+                                    </div>
+                                    <p id="sales-script" class="text-xl font-bold leading-relaxed mb-6 text-slate-800">...</p>
+                                    <div class="bg-white rounded-2xl p-4 border border-slate-200">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <i data-lucide="help-circle" class="w-3 h-3 text-slate-400"></i>
+                                            <span class="text-[10px] font-black uppercase text-slate-400">為什麼要這麼說？(背後邏輯)</span>
+                                        </div>
+                                        <p id="script-logic" class="text-sm text-slate-600 font-medium leading-relaxed">...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4" id="followup-container">
+                            <!-- Follow up cards injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Gaps -->
+                    <div class="bg-white rounded-[2.5rem] border border-slate-200 p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4 px-2">
+                           <h4 class="font-black text-slate-800 text-sm flex items-center gap-2">
+                               <i data-lucide="target" class="w-4 h-4 text-rose-500"></i> 流程細節修正
+                           </h4>
+                       </div>
+                       <div id="gaps-container" class="space-y-3">
+                           <!-- Gaps injected here -->
+                       </div>
+                    </div>
+
+                    <!-- Action Plan (AP) Summary Card -->
+                    <div class="bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-8 opacity-20"><i data-lucide="flag" class="w-24 h-24 text-white"></i></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="bg-indigo-500 p-2 rounded-xl text-white"><i data-lucide="send" class="w-5 h-5"></i></div>
+                                <h4 class="font-black text-white text-lg">督導回饋摘要 (Action Plan)</h4>
+                            </div>
+                            
+                            <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="text-[10px] font-black text-indigo-300 uppercase tracking-widest">可複製回饋內容</span>
+                                    <button id="copy-ap-btn" class="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all no-print">
+                                        <i data-lucide="copy" class="w-3 h-3"></i> 複製 AP 全文
+                                    </button>
+                                </div>
+                                <p id="ap-summary-text" class="text-white font-bold text-lg leading-relaxed font-mono">
+                                    【AP】加載中...
+                                </p>
+                            </div>
+
+                            <div class="mt-6 grid grid-cols-3 gap-4">
+                                <div class="text-center">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">Next Stage</p>
+                                    <p id="ns-date" class="text-white font-black text-lg">-</p>
+                                </div>
+                                <div class="text-center border-x border-white/10">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">商機等級</p>
+                                    <p id="opportunity-level" class="text-white font-black text-lg">-</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">優化焦點</p>
+                                    <p id="optimization-focus" class="text-white font-bold text-sm truncate">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Decorative background icon -->
-                    <i data-lucide="quote" class="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 -rotate-12"></i>
-                </div>
 
-                <!-- Final AP Summary -->
-                <div class="bg-white rounded-[2.5rem] p-10 border border-slate-200">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center gap-2 font-black text-slate-800">
-                            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
-                            ACTION PLAN (AP) 總結
-                        </div>
-                        <button id="copy-ap" class="text-xs font-black px-4 py-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-all flex items-center gap-2">
-                            <i data-lucide="copy" class="w-3 h-3"></i> 複製內容
-                        </button>
-                    </div>
-                    <div id="ap-summary" class="font-mono text-sm font-bold bg-slate-50 p-6 rounded-3xl border border-slate-100 text-slate-700 leading-relaxed whitespace-pre-wrap">--</div>
                 </div>
-
             </div>
         </div>
     </main>
 
     <script>
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
-        let scoreChart, radarChart;
-        let base64Image = null;
+        let scoreChartInstance = null;
 
         lucide.createIcons();
 
-        // Elements
-        const dropZone = document.getElementById('image-paste-zone');
-        const imgPreview = document.getElementById('img-preview');
-        const previewContainer = document.getElementById('image-preview-container');
-        const placeholder = document.getElementById('image-placeholder');
-        const removeImgBtn = document.getElementById('remove-img');
-        const analyzeBtn = document.getElementById('analyze-btn');
         const logInput = document.getElementById('log-input');
         const apiKeyInput = document.getElementById('api-key-input');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const pdfBtn = document.getElementById('pdf-btn');
+        const exportBar = document.getElementById('export-bar');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const errorMsg = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
 
-        // Paste Image Implementation
-        window.addEventListener('paste', (e) => {
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    handleFile(blob);
+        // 整合 2024 與 2025 大數據知識庫摘要
+        const historicalInsights = `
+            2024-2025 年度趨勢分析：
+            1. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短（僅戴1-2次即放棄）、辨識力極差者對助聽器過高期待、APAP 試用後因朋友介紹它牌流失。
+            2. 2025 成交關鍵：身障手冊申請進度掌握、長輩對耳內機 vs 耳掛型的外觀堅持、家人決策支持度。
+            3. 特殊客群：睡眠中心轉介者（如台大/亞東）對價格較敏感，需長線追蹤；失智症患者需加強家人教育，避免配戴不適應或遺失。
+            4. 常用型號：I3, Z1, I2.3, OPN S2 等。
+        `;
+
+        const systemPrompt = `
+            你是一位助聽器與正壓呼吸器領域的頂尖督導。
+            你有權存取「2024-2025 跨年度歷史日誌大數據」(摘要：${historicalInsights})。
+            
+            請分析輸入的日誌。如果該案例與 2024 年常見的「多人聚會失敗」或「短期放棄」雷同，請務必在 "staff_instruction" 中提出預警。
+            
+            嚴格回傳 JSON：
+            {
+              "service_score": 數字(1-5),
+              "conversion_chance": 數字(1-100),
+              "failed_keys": ["關鍵1", "關鍵2", "關鍵3"],
+              "user_profile": {
+                "disc": "D/I/S/C",
+                "personality": "性格關鍵字",
+                "core_need": "核心需求描述",
+                "staff_instruction": "督導叮嚀 (需結合 2024-2025 數據給出具體且具權威性的建議)"
+              },
+              "professional_checks": [
+                { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
+                { "label": "SRT 單字詞測試", "executed": boolean, "next_step_plan": "..." },
+                { "label": "情境模擬演練", "executed": boolean, "next_step_plan": "..." }
+              ],
+              "gaps": [{"issue": "缺口", "action": "修正"}],
+              "strategy": {
+                "script": "對客話術 (需針對客戶痛點)",
+                "logic": "為什麼要這麼說 (分析客戶人格特質與潛在流失風險)",
+                "follow_up": {
+                  "t24h": { "action": "動作", "sms": "..." },
+                  "d7": { "action": "動作", "sms": "..." },
+                  "d14": { "action": "動作", "sms": "..." }
                 }
+              },
+              "action_plan": {
+                "ns_date": "MM/DD",
+                "opportunity": "A/B/C/D",
+                "optimization_content": "服務優化內容簡述"
+              }
+            }
+        `;
+
+        window.copyToClipboard = function(text, btnElement) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if(btnElement) {
+                const originalIcon = btnElement.innerHTML;
+                btnElement.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btnElement.innerHTML = originalIcon;
+                    lucide.createIcons();
+                }, 2000);
+            }
+        }
+
+        async function fetchWithRetry(url, options, retries = 5) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            const text = logInput.value.trim();
+            const key = apiKeyInput.value.trim();
+            const apiKey = key || "";
+
+            if (!text) return alert("請輸入日誌內容");
+
+            emptyState.classList.add('hidden');
+            dashboardContent.classList.add('hidden');
+            exportBar.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+                const data = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: "user", parts: [{ text: text }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const json = JSON.parse(data.candidates[0].content.parts[0].text);
+                renderDashboard(json);
+
+                loadingState.classList.add('hidden');
+                dashboardContent.classList.remove('hidden');
+                exportBar.classList.remove('hidden');
+                dashboardContent.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                loadingState.classList.add('hidden');
+                errorMsg.classList.remove('hidden');
+                errorText.textContent = "分析失敗，請檢查 API Key。";
             }
         });
 
-        dropZone.onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = e => handleFile(e.target.files[0]);
-            input.click();
-        };
-
-        function handleFile(file) {
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                base64Image = e.target.result.split(',')[1];
-                imgPreview.src = e.target.result;
-                placeholder.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-                dropZone.classList.add('active');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        removeImgBtn.onclick = (e) => {
-            e.stopPropagation();
-            base64Image = null;
-            imgPreview.src = "";
-            placeholder.classList.remove('hidden');
-            previewContainer.classList.add('hidden');
-            dropZone.classList.remove('active');
-        };
-
-        // Analysis Logic
-        analyzeBtn.addEventListener('click', async () => {
-            const text = logInput.value.trim();
-            const apiKey = apiKeyInput.value.trim() || "";
-
-            if (!text) return alert("請輸入服務日誌內容");
-
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('dashboard-content').classList.add('hidden');
-            document.getElementById('loading-state').classList.remove('hidden');
-
-            try {
-                const systemPrompt = `你是一位專業的助聽器銷售與聽力督導。
-                請根據日誌內容與(如果有提供)聽力圖截圖，進行深度分析。
-                參考歷史流失數據(2024-25)：常因為家人意見、安靜環境效果與吵雜環境落差、辨識力預期不符而流失。
-                
-                必須回傳 JSON：
-                {
-                  "score": 1-5,
-                  "conversion": 1-100,
-                  "audio_analysis": "對聽力圖的具體判讀(如: 高頻陡降、平坦型、辨識力受限等)",
-                  "personality": { "type": "DISC類型", "traits": "性格特質描述", "need": "底層需求" },
-                  "radar": [情緒分數, 期望分數, 信任分數, 預算意願, 理解力],
-                  "instruction": "督導給人員的實戰建議",
-                  "script": "推薦成交話術",
-                  "script_logic": "為什麼這樣說的心理邏輯",
-                  "ap": "最後的 AP 總結回饋"
-                }`;
-
-                const contents = [{
-                    role: "user",
-                    parts: [{ text: `服務日誌：\n${text}\n\n指令：\n${systemPrompt}` }]
-                }];
-
-                if (base64Image) {
-                    contents[0].parts.push({
-                        inlineData: { mimeType: "image/png", data: base64Image }
-                    });
-                }
-
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } })
-                });
-
-                const rawData = await response.json();
-                const data = JSON.parse(rawData.candidates[0].content.parts[0].text);
-                
-                renderDashboard(data);
-                
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('dashboard-content').classList.remove('hidden');
-            } catch (err) {
-                console.error(err);
-                alert("分析失敗，請檢查 API Key 或日誌內容格式。");
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('empty-state').classList.remove('hidden');
-            }
+        // 匯出 PDF 功能
+        pdfBtn.addEventListener('click', () => {
+            window.print();
         });
 
         function renderDashboard(data) {
-            // Scores
-            document.getElementById('score-val').textContent = data.score;
-            document.getElementById('conversion-val').textContent = `${data.conversion}%`;
-            document.getElementById('conversion-bar').style.width = `${data.conversion}%`;
-            
-            const badge = document.getElementById('chance-badge');
-            badge.textContent = data.conversion > 60 ? "HIGH CHANCE" : "LOW CHANCE";
-            badge.className = `px-2 py-0.5 rounded-full text-[9px] font-black ${data.conversion > 60 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`;
+            document.getElementById('score-val').textContent = `${data.service_score}/5`;
+            document.getElementById('conversion-val').textContent = `${data.conversion_chance}%`;
+            document.getElementById('conversion-bar').style.width = `${data.conversion_chance}%`;
 
-            // Audio Analysis
-            document.getElementById('audio-summary').textContent = data.audio_analysis || "未偵測到聽力圖圖像資訊。";
+            const trend = document.getElementById('trend-indicator');
+            if (data.conversion_chance > 70) {
+                trend.textContent = "高成交趨勢";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700";
+            } else if (data.conversion_chance < 40) {
+                trend.textContent = "流失風險高";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-rose-100 text-rose-700";
+            } else {
+                trend.textContent = "持平";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-700";
+            }
 
-            // Profile
-            document.getElementById('profile-name').textContent = `Customer - ${data.personality.type} Type`;
-            document.getElementById('profile-disc').textContent = `DISC: ${data.personality.type}`;
-            document.getElementById('profile-trait').textContent = data.personality.traits;
-            document.getElementById('profile-need').textContent = data.personality.need;
-            
-            const avatar = document.getElementById('disc-avatar');
-            avatar.textContent = data.personality.type[0];
-            const colors = { D: '#EF4444', I: '#F59E0B', S: '#10B981', C: '#3B82F6' };
-            avatar.style.backgroundColor = colors[data.personality.type[0]] || '#CBD5E1';
-            avatar.style.color = 'white';
+            const failedContainer = document.getElementById('failed-keys-container');
+            failedContainer.innerHTML = '';
+            data.failed_keys.forEach(key => {
+                failedContainer.innerHTML += `
+                    <div class="flex items-center gap-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                        <p class="text-sm font-bold text-slate-700">${key}</p>
+                    </div>
+                `;
+            });
 
-            // Strategy
-            document.getElementById('sales-script').textContent = `「${data.script}」`;
-            document.getElementById('supervisor-instruction').textContent = data.instruction;
-            document.getElementById('script-logic').textContent = data.script_logic;
-            document.getElementById('ap-summary').textContent = data.ap;
-
-            // Charts
-            updateCharts(data);
-        }
-
-        function updateCharts(data) {
-            // Score Donut
-            if (scoreChart) scoreChart.destroy();
-            scoreChart = new Chart(document.getElementById('scoreChart'), {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            if (scoreChartInstance) scoreChartInstance.destroy();
+            scoreChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: [data.score, 5 - data.score],
-                        backgroundColor: ['#6366F1', '#F1F5F9'],
+                        data: [data.service_score, 5 - data.service_score],
+                        backgroundColor: ['#10B981', '#F1F5F9'],
                         borderWidth: 0,
-                        circumference: 360,
-                        rotation: 0
                     }]
                 },
-                options: { cutout: '80%', plugins: { legend: { display: false } } }
+                options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // Radar
-            if (radarChart) radarChart.destroy();
-            radarChart = new Chart(document.getElementById('radarChart'), {
-                type: 'radar',
-                data: {
-                    labels: ['情緒', '期望', '信任', '預算', '理解'],
-                    datasets: [{
-                        label: '維度分數',
-                        data: data.radar,
-                        borderColor: '#6366F1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        pointBackgroundColor: '#6366F1',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    scales: { r: { min: 0, max: 10, ticks: { display: false } } },
-                    plugins: { legend: { display: false } }
-                }
+            document.getElementById('disc-badge').textContent = data.user_profile.disc;
+            document.getElementById('personality-text').textContent = data.user_profile.personality;
+            document.getElementById('needs-text').textContent = data.user_profile.core_need;
+            document.getElementById('staff-action-text').textContent = data.user_profile.staff_instruction;
+
+            const checksContainer = document.getElementById('checks-container');
+            checksContainer.innerHTML = '';
+            data.professional_checks.forEach(check => {
+                const isDone = check.executed;
+                checksContainer.innerHTML += `
+                    <div class="p-4 rounded-2xl border ${isDone ? 'bg-emerald-100/30 border-emerald-200' : 'bg-rose-100/30 border-rose-200'}">
+                        <div class="flex justify-between items-center mb-2">
+                            <h5 class="font-bold text-sm text-slate-800">${check.label}</h5>
+                            <span class="text-[9px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-rose-200 text-rose-800'}">${isDone ? '已完成' : '補測'}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 font-bold">${check.next_step_plan}</p>
+                    </div>
+                `;
             });
+
+            document.getElementById('sales-script').textContent = `「${data.strategy.script}」`;
+            document.getElementById('script-logic').textContent = data.strategy.logic;
+            
+            const followupContainer = document.getElementById('followup-container');
+            followupContainer.innerHTML = '';
+            const labels = { t24h: '24H 關懷', d7: '7D 追蹤', d14: '14D 轉介' };
+            Object.entries(data.strategy.follow_up).forEach(([k, v]) => {
+                followupContainer.innerHTML += `
+                    <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
+                        <span class="text-[9px] font-black text-indigo-700 bg-indigo-200 px-2 py-0.5 rounded mb-2 inline-block">${labels[k]}</span>
+                        <p class="text-[11px] font-bold text-slate-800 mb-2">${v.action}</p>
+                        <div class="bg-white p-2 border border-slate-200 rounded-lg text-[10px] text-slate-600 italic relative pr-8">
+                            ${v.sms}
+                            <button onclick="copyToClipboard('${v.sms.replace(/'/g, "\\'")}', this)" class="absolute top-1 right-1 p-1 hover:text-indigo-600 no-print"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const gapsContainer = document.getElementById('gaps-container');
+            gapsContainer.innerHTML = '';
+            data.gaps.forEach((g, i) => {
+                gapsContainer.innerHTML += `
+                    <div class="flex gap-4 p-3 bg-slate-100 rounded-xl border border-slate-200">
+                        <div class="text-xs font-black text-indigo-400">0${i+1}</div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800 mb-1">${g.issue}</p>
+                            <p class="text-[11px] text-slate-500 font-medium">${g.action}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const apFull = `【AP】NS ${data.action_plan.ns_date}；商機${data.action_plan.opportunity}；${data.action_plan.optimization_content}`;
+            document.getElementById('ap-summary-text').textContent = apFull;
+            document.getElementById('ns-date').textContent = data.action_plan.ns_date;
+            document.getElementById('opportunity-level').textContent = data.action_plan.opportunity;
+            document.getElementById('optimization-focus').textContent = data.action_plan.optimization_content;
+
+            document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apFull, document.getElementById('copy-ap-btn'));
+
+            lucide.createIcons();
         }
-
-        document.getElementById('copy-ap').onclick = () => {
-            const content = document.getElementById('ap-summary').innerText;
-            const el = document.createElement('textarea');
-            el.value = content;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("已複製 AP 內容");
-        };
     </script>
 </body>
 </html>
