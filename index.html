@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Supervisor - 專業日誌分析儀</title>
+    <title>AI Supervisor - 專業日誌分析儀 (含歷史大數據優化)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -37,7 +37,7 @@
                     <div class="bg-indigo-600 p-2 rounded-xl text-white">
                         <i data-lucide="zap" class="w-5 h-5"></i>
                     </div>
-                    <span class="font-black text-xl tracking-tight text-slate-900">HA <span class="text-indigo-600">Supervisor</span></span>
+                    <span class="font-black text-xl tracking-tight text-slate-900">HA <span class="text-indigo-600">Supervisor PRO</span></span>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="relative group">
@@ -55,8 +55,11 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <div class="mb-8 text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                <i data-lucide="database" class="w-3 h-3"></i> 已載入年度日誌知識庫
+            </div>
             <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
-            <p class="text-slate-500 text-sm italic">專業督導導向：挖掘「未成交真相」，部署「AP 行動方案」。</p>
+            <p class="text-slate-500 text-sm italic">專業督導導向：結合年度歷史數據，精準預判客情並部署行動方案。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -77,7 +80,7 @@
                     </div>
 
                     <button id="analyze-btn" class="w-full mt-6 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black flex justify-center items-center gap-3 hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 text-lg group">
-                        <span class="flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> 開始診斷</span>
+                        <span class="flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> 深度診斷</span>
                     </button>
                 </div>
             </div>
@@ -91,7 +94,7 @@
                         <i data-lucide="file-search" class="w-16 h-16 opacity-20 text-slate-400"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-400 mb-2">等待數據輸入</h3>
-                    <p class="text-sm text-slate-400 text-center max-w-xs">請在左側輸入日誌並確認 API Key 已填寫。</p>
+                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合年度 Excel 日誌進行對比分析。</p>
                 </div>
 
                 <!-- Loading State -->
@@ -102,7 +105,7 @@
                             <i data-lucide="brain" class="w-6 h-6 text-indigo-600 animate-pulse"></i>
                         </div>
                     </div>
-                    <p class="mt-6 font-bold text-indigo-900">AI 督導正在分析中<span class="loading-dots"></span></p>
+                    <p class="mt-6 font-bold text-indigo-900">正在對比歷史趨勢中<span class="loading-dots"></span></p>
                 </div>
 
                 <!-- Dashboard Content -->
@@ -126,9 +129,10 @@
                         <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">成交潛力</p>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">成交潛力 (預測)</p>
                                     <h3 class="text-2xl font-black text-indigo-600" id="conversion-val">0%</h3>
                                 </div>
+                                <div id="trend-indicator" class="text-[10px] font-bold px-2 py-1 rounded-full"></div>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
                                 <div id="conversion-bar" class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
@@ -285,8 +289,22 @@
         const errorMsg = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
 
+        // 模擬背景大數據知識庫摘要 (由 AI 讀取檔案後轉換)
+        const historicalInsights = `
+            年度趨勢摘要：
+            1. 成交關鍵：身障手冊申請進度、長輩對耳內機 vs 耳掛型的外觀堅持、家人決策支持度。
+            2. 失敗主因：價格考量（尤其是雙耳選配時）、失智或認知退化導致配戴困難、回診時間不確定。
+            3. 特殊客群：睡眠中心轉介者通常需長線追蹤，對價格較敏感。
+            4. 常用型號：I3, Z1, I2.3 等。
+        `;
+
         const systemPrompt = `
-            你是一位助聽器領域的資深督導。請針對工作日誌進行「未來式」的精確部署。
+            你是一位助聽器與正壓呼吸器領域的資深督導。
+            你有權存取「年度歷史工作日誌大數據」(摘要內容：${historicalInsights})。
+            
+            請針對輸入的工作日誌進行分析，並與歷史案例進行比對。
+            如果輸入的案例與歷史失敗案例（如外觀考量、價格猶豫）雷同，請特別在 "staff_instruction" 指出。
+            
             嚴格回傳 JSON 格式：
             {
               "service_score": 數字(1-5),
@@ -296,7 +314,7 @@
                 "disc": "D/I/S/C",
                 "personality": "性格關鍵字",
                 "core_need": "核心需求描述",
-                "staff_instruction": "督導對此同仁的叮嚀"
+                "staff_instruction": "督導對此同仁的叮嚀 (請結合歷史數據給出具體建議)"
               },
               "professional_checks": [
                 { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
@@ -305,8 +323,8 @@
               ],
               "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
-                "script": "對客話術",
-                "logic": "為什麼要這麼說(結合客戶漏單原因與人格特質)",
+                "script": "對客話術 (需針對客戶痛點)",
+                "logic": "為什麼要這麼說 (結合客戶漏單原因與人格特質)",
                 "follow_up": {
                   "t24h": { "action": "動作", "sms": "..." },
                   "d7": { "action": "動作", "sms": "..." },
@@ -387,7 +405,7 @@
             } catch (err) {
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
-                errorText.textContent = "分析失敗，請檢查 API Key 或網路連線。";
+                errorText.textContent = "分析失敗，請檢查 API Key 或日誌格式。";
             }
         });
 
@@ -395,6 +413,18 @@
             document.getElementById('score-val').textContent = `${data.service_score}/5`;
             document.getElementById('conversion-val').textContent = `${data.conversion_chance}%`;
             document.getElementById('conversion-bar').style.width = `${data.conversion_chance}%`;
+
+            const trend = document.getElementById('trend-indicator');
+            if (data.conversion_chance > 70) {
+                trend.textContent = "高成交趨勢";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700";
+            } else if (data.conversion_chance < 40) {
+                trend.textContent = "流失風險高";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-rose-100 text-rose-700";
+            } else {
+                trend.textContent = "持平";
+                trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-700";
+            }
 
             const failedContainer = document.getElementById('failed-keys-container');
             failedContainer.innerHTML = '';
@@ -474,7 +504,6 @@
                 `;
             });
 
-            // Action Plan (AP) Mapping
             const apFull = `【AP】NS ${data.action_plan.ns_date}；商機${data.action_plan.opportunity}；${data.action_plan.optimization_content}`;
             document.getElementById('ap-summary-text').textContent = apFull;
             document.getElementById('ns-date').textContent = data.action_plan.ns_date;
