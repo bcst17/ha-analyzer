@@ -164,7 +164,7 @@
                             </div>
                             <div class="space-y-4">
                                 <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-2xl border border-slate-200">
-                                    <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
+                                    <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-600 border-2 border-indigo-200 flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
                                         -
                                     </div>
                                     <div>
@@ -256,7 +256,6 @@
                                 </p>
                             </div>
 
-                            <!-- 修正：新增以下三個欄位顯示區域 -->
                             <div class="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
                                 <div class="text-center">
                                     <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">Next Stage</p>
@@ -283,10 +282,14 @@
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
         let scoreChartInstance = null;
 
-        // Initialize icons immediately
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+        // 安全啟動 Lucide 圖示
+        function initLucide() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
+
+        window.onload = initLucide;
 
         const logInput = document.getElementById('log-input');
         const apiKeyInput = document.getElementById('api-key-input');
@@ -297,55 +300,49 @@
         const errorMsg = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
 
-        // 整合 2022-2025 大數據知識庫摘要 (已移除所有具體姓名以保護隱私)
+        // 整合 2022-2025 大數據知識庫摘要 (保護隱私)
         const historicalInsights = `
             2022-2025 年度大數據趨勢分析：
-            1. 2022-2023 特徵：振興券政策對選配有顯著拉力；口罩配戴時期導致聽損者通訊壓力劇增，對「語音清晰度」要求極高。
-            2. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短、辨識力極差者對助聽器過高期待、試用後因親友介紹它牌流失。
-            3. 2025 成交關鍵：精準掌握補助申請進度、長輩對耳內機的外觀堅持、以及家屬對技術數據對比的信任度。
-            4. 型號偏好演變：從早期基礎機種轉向高效能、支援智慧降噪之機種。
+            1. 2022-2023 特徵：振興券政策對選配有顯著拉力；口罩配戴時期導致聽損者通訊壓力劇增。
+            2. 2024 高頻失敗點：多人聚會溝通困難、聲音適應期過短、試用後因親友介紹它牌流失。
+            3. 2025 成交關鍵：掌握補助申請進度、對耳內機的外觀堅持、以及對技術數據對比的信任度。
         `;
 
         const systemPrompt = `
             你是一位助聽器與正壓呼吸器領域的頂尖督導。
             你有權存取「2022-2025 跨年度歷史日誌大數據」(背景洞察：${historicalInsights})。
             
-            請分析輸入的日誌。如果該案例與歷史失敗點雷同，請務必在 "staff_instruction" 中提出預警。
-
             ⚠️ 嚴格隱私指令：
-            嚴禁在輸出內容中出現任何客戶的姓名、去識別化姓名（如某O某）、身分證字號或電話。
-            請統一使用「用戶」、「客戶」、「個案」或「家屬」來代稱。
+            嚴禁在輸出內容中出現姓名。請統一使用「用戶」或「家屬」。
             
-            嚴格回傳 JSON：
+            嚴格回傳 JSON 格式，且必須包含 action_plan 對象：
             {
               "service_score": 數字(1-5),
               "conversion_chance": 數字(1-100),
-              "failed_keys": ["關鍵1", "關鍵2", "關鍵3"],
+              "failed_keys": ["關鍵1", "關鍵2"],
               "user_profile": {
                 "disc": "D/I/S/C",
-                "personality": "性格關鍵字",
-                "core_need": "核心需求描述",
-                "staff_instruction": "督導叮嚀 (需結合 2022-2025 四年數據給出建議，嚴禁提到姓名)"
+                "personality": "關鍵字",
+                "core_need": "需求描述",
+                "staff_instruction": "建議內容"
               },
               "professional_checks": [
-                { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
-                { "label": "SRT 單字詞測試", "executed": boolean, "next_step_plan": "..." },
-                { "label": "情境模擬演練", "executed": boolean, "next_step_plan": "..." }
+                { "label": "項目名", "executed": boolean, "next_step_plan": "描述" }
               ],
               "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
-                "script": "對客話術 (嚴禁提到姓名)",
-                "logic": "為什麼要這麼說 (分析心理，嚴禁提到姓名)",
+                "script": "對客話術",
+                "logic": "分析邏輯",
                 "follow_up": {
-                  "t24h": { "action": "動作", "sms": "..." },
-                  "d7": { "action": "動作", "sms": "..." },
-                  "d14": { "action": "動作", "sms": "..." }
+                  "t24h": { "action": "動作", "sms": "簡訊內容" },
+                  "d7": { "action": "動作", "sms": "內容" },
+                  "d14": { "action": "動作", "sms": "內容" }
                 }
               },
               "action_plan": {
                 "ns_date": "MM/DD",
                 "opportunity": "A/B/C/D",
-                "optimization_content": "服務優化內容簡述 (嚴禁提到姓名)"
+                "optimization_content": "一句話優化焦點"
               }
             }
         `;
@@ -360,10 +357,10 @@
             if(btnElement) {
                 const originalText = btnElement.innerHTML;
                 btnElement.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> 已複製';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                initLucide();
                 setTimeout(() => {
                     btnElement.innerHTML = originalText;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    initLucide();
                 }, 2000);
             }
         }
@@ -413,6 +410,7 @@
                 dashboardContent.classList.remove('hidden');
                 dashboardContent.scrollIntoView({ behavior: 'smooth' });
             } catch (err) {
+                console.error(err);
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
                 errorText.textContent = "分析失敗，請檢查 API Key 或網路連線。";
@@ -420,6 +418,7 @@
         });
 
         function renderDashboard(data) {
+            // KPI 更新
             document.getElementById('score-val').textContent = `${data.service_score}/5`;
             document.getElementById('conversion-val').textContent = `${data.conversion_chance}%`;
             document.getElementById('conversion-bar').style.width = `${data.conversion_chance}%`;
@@ -436,9 +435,10 @@
                 trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-700";
             }
 
+            // 失敗因子
             const failedContainer = document.getElementById('failed-keys-container');
             failedContainer.innerHTML = '';
-            data.failed_keys.forEach(key => {
+            (data.failed_keys || []).forEach(key => {
                 failedContainer.innerHTML += `
                     <div class="flex items-center gap-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                         <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
@@ -447,6 +447,7 @@
                 `;
             });
 
+            // 圓餅圖
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if (scoreChartInstance) scoreChartInstance.destroy();
             scoreChartInstance = new Chart(ctx, {
@@ -461,17 +462,17 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // 圓圈中僅呈現 DISC 的第一個英文字母
-            const discInitial = data.user_profile.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
+            // 用戶畫像 (僅英文字母)
+            const discInitial = data.user_profile?.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
             document.getElementById('disc-badge').textContent = discInitial;
-            
-            document.getElementById('personality-text').textContent = data.user_profile.personality;
-            document.getElementById('needs-text').textContent = data.user_profile.core_need;
-            document.getElementById('staff-action-text').textContent = data.user_profile.staff_instruction;
+            document.getElementById('personality-text').textContent = data.user_profile?.personality || "N/A";
+            document.getElementById('needs-text').textContent = data.user_profile?.core_need || "N/A";
+            document.getElementById('staff-action-text').textContent = data.user_profile?.staff_instruction || "N/A";
 
+            // 專業檢測
             const checksContainer = document.getElementById('checks-container');
             checksContainer.innerHTML = '';
-            data.professional_checks.forEach(check => {
+            (data.professional_checks || []).forEach(check => {
                 const isDone = check.executed;
                 checksContainer.innerHTML += `
                     <div class="p-4 rounded-2xl border ${isDone ? 'bg-emerald-100/30 border-emerald-200' : 'bg-rose-100/30 border-rose-200'}">
@@ -484,28 +485,47 @@
                 `;
             });
 
-            document.getElementById('sales-script').textContent = `「${data.strategy.script}」`;
-            document.getElementById('script-logic').textContent = data.strategy.logic;
+            // 話術與策略
+            document.getElementById('sales-script').textContent = `「${data.strategy?.script || ''}」`;
+            document.getElementById('script-logic').textContent = data.strategy?.logic || '';
             
+            // 追蹤計畫
             const followupContainer = document.getElementById('followup-container');
             followupContainer.innerHTML = '';
             const labels = { t24h: '24H 關懷', d7: '7D 追蹤', d14: '14D 轉介' };
-            Object.entries(data.strategy.follow_up).forEach(([k, v]) => {
-                followupContainer.innerHTML += `
-                    <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
-                        <span class="text-[9px] font-black text-indigo-700 bg-indigo-200 px-2 py-0.5 rounded mb-2 inline-block">${labels[k]}</span>
-                        <p class="text-[11px] font-bold text-slate-800 mb-2">${v.action}</p>
-                        <div class="bg-white p-2 border border-slate-200 rounded-lg text-[10px] text-slate-600 italic relative pr-8">
-                            ${v.sms}
-                            <button onclick="copyToClipboard('${v.sms.replace(/'/g, "\\'")}', this)" class="absolute top-1 right-1 p-1 hover:text-indigo-600 no-print"><i data-lucide="copy" class="w-3 h-3"></i></button>
+            if (data.strategy?.follow_up) {
+                Object.entries(data.strategy.follow_up).forEach(([k, v]) => {
+                    followupContainer.innerHTML += `
+                        <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
+                            <span class="text-[9px] font-black text-indigo-700 bg-indigo-200 px-2 py-0.5 rounded mb-2 inline-block">${labels[k]}</span>
+                            <p class="text-[11px] font-bold text-slate-800 mb-2">${v.action}</p>
+                            <div class="bg-white p-2 border border-slate-200 rounded-lg text-[10px] text-slate-600 italic relative pr-8">
+                                ${v.sms}
+                                <button onclick="copyToClipboard('${v.sms.replace(/'/g, "\\'")}', this)" class="absolute top-1 right-1 p-1 hover:text-indigo-600"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
 
+            // 修正：顯式更新底部三個 Action Plan 欄位
+            if (data.action_plan) {
+                const ap = data.action_plan;
+                const apSummary = `【AP】NS ${ap.ns_date}；商機${ap.opportunity}；${ap.optimization_content}`;
+                document.getElementById('ap-summary-text').textContent = apSummary;
+                
+                // 結構化數據精確填寫
+                document.getElementById('ns-date').textContent = ap.ns_date || "-";
+                document.getElementById('opportunity-level').textContent = ap.opportunity || "-";
+                document.getElementById('optimization-focus').textContent = ap.optimization_content || "-";
+                
+                document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apSummary, document.getElementById('copy-ap-btn'));
+            }
+
+            // 流程細節修正
             const gapsContainer = document.getElementById('gaps-container');
             gapsContainer.innerHTML = '';
-            data.gaps.forEach((g, i) => {
+            (data.gaps || []).forEach((g, i) => {
                 gapsContainer.innerHTML += `
                     <div class="flex gap-4 p-3 bg-slate-100 rounded-xl border border-slate-200">
                         <div class="text-xs font-black text-indigo-400">0${i+1}</div>
@@ -517,18 +537,7 @@
                 `;
             });
 
-            // 修正：將 Action Plan 數據映射到新增的欄位中
-            const apFull = `【AP】NS ${data.action_plan.ns_date}；商機${data.action_plan.opportunity}；${data.action_plan.optimization_content}`;
-            document.getElementById('ap-summary-text').textContent = apFull;
-            
-            // 結構化數據填寫
-            document.getElementById('ns-date').textContent = data.action_plan.ns_date;
-            document.getElementById('opportunity-level').textContent = data.action_plan.opportunity;
-            document.getElementById('optimization-focus').textContent = data.action_plan.optimization_content;
-
-            document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apFull, document.getElementById('copy-ap-btn'));
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            initLucide();
         }
     </script>
 </body>
