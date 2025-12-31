@@ -256,7 +256,8 @@
                                 </p>
                             </div>
 
-                            <div class="mt-6 grid grid-cols-3 gap-4">
+                            <!-- 修正：新增以下三個欄位顯示區域 -->
+                            <div class="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
                                 <div class="text-center">
                                     <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">Next Stage</p>
                                     <p id="ns-date" class="text-white font-black text-lg">-</p>
@@ -267,7 +268,7 @@
                                 </div>
                                 <div class="text-center">
                                     <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">優化焦點</p>
-                                    <p id="optimization-focus" class="text-white font-bold text-sm truncate">-</p>
+                                    <p id="optimization-focus" class="text-white font-bold text-sm truncate px-1">-</p>
                                 </div>
                             </div>
                         </div>
@@ -460,7 +461,7 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // 修正 1：圓圈中僅呈現 DISC 的第一個英文字母
+            // 圓圈中僅呈現 DISC 的第一個英文字母
             const discInitial = data.user_profile.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
             document.getElementById('disc-badge').textContent = discInitial;
             
@@ -516,8 +517,15 @@
                 `;
             });
 
+            // 修正：將 Action Plan 數據映射到新增的欄位中
             const apFull = `【AP】NS ${data.action_plan.ns_date}；商機${data.action_plan.opportunity}；${data.action_plan.optimization_content}`;
             document.getElementById('ap-summary-text').textContent = apFull;
+            
+            // 結構化數據填寫
+            document.getElementById('ns-date').textContent = data.action_plan.ns_date;
+            document.getElementById('opportunity-level').textContent = data.action_plan.opportunity;
+            document.getElementById('optimization-focus').textContent = data.action_plan.optimization_content;
+
             document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apFull, document.getElementById('copy-ap-btn'));
 
             if (typeof lucide !== 'undefined') lucide.createIcons();
