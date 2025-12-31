@@ -70,7 +70,7 @@
                 <i data-lucide="database" class="w-3 h-3"></i> 已載入 2022-2025 全年度日誌數據
             </div>
             <h1 class="text-3xl font-black text-slate-900 mb-3">工作日誌智慧分析儀</h1>
-            <p class="text-slate-500 text-sm italic">專業督導導向：整合四年大數據洞察，精準預判客情並部署行動方案。</p>
+            <p class="text-slate-500 text-sm italic">結合跨年度歷史數據，精準預判客情並部署行動方案。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -112,7 +112,7 @@
                         <i data-lucide="file-search" class="w-16 h-16 opacity-20 text-slate-400"></i>
                     </div>
                     <h3 class="text-xl font-black text-slate-400 mb-2">等待數據輸入</h3>
-                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合 2022-2025 歷史日誌進行跨年度智慧分析。</p>
+                    <p class="text-sm text-slate-400 text-center max-w-xs">AI 已就緒，將結合歷史日誌進行智慧分析。</p>
                 </div>
 
                 <!-- Loading State -->
@@ -123,7 +123,7 @@
                             <i data-lucide="brain" class="w-6 h-6 text-indigo-600 animate-pulse"></i>
                         </div>
                     </div>
-                    <p class="mt-6 font-bold text-indigo-900">正在進行 2022-2025 智慧交叉比對<span class="loading-dots"></span></p>
+                    <p class="mt-6 font-bold text-indigo-900">正在進行智慧分析<span class="loading-dots"></span></p>
                 </div>
 
                 <!-- Dashboard Content -->
@@ -312,9 +312,9 @@
         // 整合 2022-2025 大數據知識庫摘要
         const historicalInsights = `
             2022-2025 年度大數據趨勢分析：
-            1. 2022-2023 特徵：振興券/促銷活動對 APAP 選配有顯著拉力（如王志成案）；口罩配戴時期（陳惠美案）導致聽損者通訊壓力劇增，對「語音清晰度」要求極高。
+            1. 2022-2023 特徵：振興券政策對 APAP 選配有顯著拉力（如王O成案）；口罩配戴時期（陳O美案）導致聽損者通訊壓力劇增，對「語音清晰度」要求極高。
             2. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短（僅戴1-2次即放棄）、辨識力極差者對助聽器過高期待、APAP 試用後因朋友介紹它牌流失。
-            3. 2025 成交關鍵：精準掌握身障手冊申請進度（2月回診卡位）、長輩對耳內機(ITE)的外觀堅持、以及家屬（尤其具科技背景者）對數據對比的信任度。
+            3. 2025 成交關鍵：精準掌握身障手冊申請進度、長輩對耳內機(ITE)的外觀堅持、以及家屬對數據對比的信任度（如兒子為資工背景對技術數據更有感）。
             4. 型號偏好演變：從早期 Siya、More 轉向 I3, Z1, I2.3 等高效能機種。
         `;
 
@@ -323,6 +323,8 @@
             你有權存取「2022-2025 跨年度歷史日誌大數據」(背景洞察：${historicalInsights})。
             
             請分析輸入的日誌。如果該案例與歷史失敗點（如 2024 多人聚會失敗、2022 長期聽損適應困難）雷同，請務必在 "staff_instruction" 中提出預警。
+
+            ⚠️ 隱私保護原則：在分析結果的任何敘述中（如 summary, staff_instruction, logic 等），若提及個案姓名，必須去識別化。格式為：姓 + O + 名（例如：陳惠美 -> 陳O美）。
             
             嚴格回傳 JSON：
             {
@@ -333,7 +335,7 @@
                 "disc": "D/I/S/C",
                 "personality": "性格關鍵字",
                 "core_need": "核心需求描述",
-                "staff_instruction": "督導叮嚀 (需結合 2022-2025 四年數據給出具體且具權威性的建議)"
+                "staff_instruction": "督導叮嚀 (需結合 2022-2025 四年數據給出具體且具權威性的建議，個資需去識別化)"
               },
               "professional_checks": [
                 { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
@@ -342,8 +344,8 @@
               ],
               "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
-                "script": "對客話術 (需針對客戶痛點，可引用歷史成功案例的對話邏輯)",
-                "logic": "為什麼要這麼說 (分析跨年度客情趨勢與心理)",
+                "script": "對客話術 (需針對客戶痛點，可引用歷史成功案例的對話邏輯，個資需去識別化)",
+                "logic": "為什麼要這麼說 (分析跨年度客情趨勢與心理，個資需去識別化)",
                 "follow_up": {
                   "t24h": { "action": "動作", "sms": "..." },
                   "d7": { "action": "動作", "sms": "..." },
@@ -353,7 +355,7 @@
               "action_plan": {
                 "ns_date": "MM/DD",
                 "opportunity": "A/B/C/D",
-                "optimization_content": "服務優化內容簡述"
+                "optimization_content": "服務優化內容簡述 (個資需去識別化)"
               }
             }
         `;
@@ -475,7 +477,10 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            document.getElementById('disc-badge').textContent = data.user_profile.disc;
+            // 修正 1：圓圈中僅呈現 DISC 的英文字
+            const discType = data.user_profile.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
+            document.getElementById('disc-badge').textContent = discType;
+            
             document.getElementById('personality-text').textContent = data.user_profile.personality;
             document.getElementById('needs-text').textContent = data.user_profile.core_need;
             document.getElementById('staff-action-text').textContent = data.user_profile.staff_instruction;
