@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Supervisor - 專業日誌分析儀 (含 2022-2025 歷史數據優化)</title>
+    
+    <!-- 讀取根目錄的 favicon.png -->
+    <link rel="icon" href="favicon.png" type="image/png">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -25,23 +29,12 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-
-        /* PDF Export Styles (Native Print) */
-        @media print {
-            nav, #left-column, #analyze-btn, #api-key-input, .no-print { display: none !important; }
-            body { background-color: white; }
-            main { max-width: 100%; padding: 0; margin: 0; }
-            .lg\:col-span-8 { width: 100% !important; grid-column: span 12 / span 12 !important; }
-            .animate-fade-in { animation: none !important; }
-            .bg-slate-900 { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; }
-            .rounded-\[3rem\], .rounded-\[2\.5rem\], .rounded-\[2rem\] { border-radius: 1rem !important; }
-        }
     </style>
 </head>
 <body class="text-slate-800">
 
     <!-- Navbar -->
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm no-print">
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-3">
@@ -99,13 +92,6 @@
             <!-- Right Column: Dashboard -->
             <div id="right-column" class="lg:col-span-8">
                 
-                <!-- PDF Export Trigger (Native Print) -->
-                <div id="export-bar" class="hidden mb-6 flex justify-end no-print">
-                    <button id="pdf-btn" class="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-700 transition-all shadow-lg">
-                        <i data-lucide="download" class="w-4 h-4"></i> 匯出分析報告 (PDF)
-                    </button>
-                </div>
-
                 <!-- Empty State -->
                 <div id="empty-state" class="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-300 p-10">
                     <div class="p-6 bg-slate-50 rounded-full mb-6">
@@ -261,7 +247,7 @@
                             <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="text-[10px] font-black text-indigo-300 uppercase tracking-widest">可複製回饋內容</span>
-                                    <button id="copy-ap-btn" class="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all no-print">
+                                    <button id="copy-ap-btn" class="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold py-1.5 px-3 rounded-full transition-all">
                                         <i data-lucide="copy" class="w-3 h-3"></i> 複製 AP 全文
                                     </button>
                                 </div>
@@ -296,35 +282,38 @@
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
         let scoreChartInstance = null;
 
-        lucide.createIcons();
+        // Initialize icons immediately
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
 
         const logInput = document.getElementById('log-input');
         const apiKeyInput = document.getElementById('api-key-input');
         const analyzeBtn = document.getElementById('analyze-btn');
-        const pdfBtn = document.getElementById('pdf-btn');
-        const exportBar = document.getElementById('export-bar');
         const loadingState = document.getElementById('loading-state');
         const emptyState = document.getElementById('empty-state');
         const dashboardContent = document.getElementById('dashboard-content');
         const errorMsg = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
 
-        // 整合 2022-2025 大數據知識庫摘要
+        // 整合 2022-2025 大數據知識庫摘要 (已移除所有具體姓名以保護隱私)
         const historicalInsights = `
             2022-2025 年度大數據趨勢分析：
-            1. 2022-2023 特徵：振興券政策對 APAP 選配有顯著拉力（如王O成案）；口罩配戴時期（陳O美案）導致聽損者通訊壓力劇增，對「語音清晰度」要求極高。
-            2. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短（僅戴1-2次即放棄）、辨識力極差者對助聽器過高期待、APAP 試用後因朋友介紹它牌流失。
-            3. 2025 成交關鍵：精準掌握身障手冊申請進度、長輩對耳內機(ITE)的外觀堅持、以及家屬對數據對比的信任度（如兒子為資工背景對技術數據更有感）。
-            4. 型號偏好演變：從早期 Siya、More 轉向 I3, Z1, I2.3 等高效能機種。
+            1. 2022-2023 特徵：振興券政策對選配有顯著拉力；口罩配戴時期導致聽損者通訊壓力劇增，對「語音清晰度」要求極高。
+            2. 2024 高頻失敗點：多人聚會溝通困難（10人以上環境）、用戶對聲音適應期過短、辨識力極差者對助聽器過高期待、試用後因親友介紹它牌流失。
+            3. 2025 成交關鍵：精準掌握補助申請進度、長輩對耳內機的外觀堅持、以及家屬對技術數據對比的信任度。
+            4. 型號偏好演變：從早期基礎機種轉向高效能、支援智慧降噪之機種。
         `;
 
         const systemPrompt = `
             你是一位助聽器與正壓呼吸器領域的頂尖督導。
             你有權存取「2022-2025 跨年度歷史日誌大數據」(背景洞察：${historicalInsights})。
             
-            請分析輸入的日誌。如果該案例與歷史失敗點（如 2024 多人聚會失敗、2022 長期聽損適應困難）雷同，請務必在 "staff_instruction" 中提出預警。
+            請分析輸入的日誌。如果該案例與歷史失敗點雷同，請務必在 "staff_instruction" 中提出預警。
 
-            ⚠️ 隱私保護原則：在分析結果的任何敘述中（如 summary, staff_instruction, logic 等），若提及個案姓名，必須去識別化。格式為：姓 + O + 名（例如：陳惠美 -> 陳O美）。
+            ⚠️ 嚴格隱私指令：
+            嚴禁在輸出內容中出現任何客戶的姓名、去識別化姓名（如某O某）、身分證字號或電話。
+            請統一使用「用戶」、「客戶」、「個案」或「家屬」來代稱。
             
             嚴格回傳 JSON：
             {
@@ -335,7 +324,7 @@
                 "disc": "D/I/S/C",
                 "personality": "性格關鍵字",
                 "core_need": "核心需求描述",
-                "staff_instruction": "督導叮嚀 (需結合 2022-2025 四年數據給出具體且具權威性的建議，個資需去識別化)"
+                "staff_instruction": "督導叮嚀 (需結合 2022-2025 四年數據給出建議，嚴禁提到姓名)"
               },
               "professional_checks": [
                 { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "..." },
@@ -344,8 +333,8 @@
               ],
               "gaps": [{"issue": "缺口", "action": "修正"}],
               "strategy": {
-                "script": "對客話術 (需針對客戶痛點，可引用歷史成功案例的對話邏輯，個資需去識別化)",
-                "logic": "為什麼要這麼說 (分析跨年度客情趨勢與心理，個資需去識別化)",
+                "script": "對客話術 (嚴禁提到姓名)",
+                "logic": "為什麼要這麼說 (分析心理，嚴禁提到姓名)",
                 "follow_up": {
                   "t24h": { "action": "動作", "sms": "..." },
                   "d7": { "action": "動作", "sms": "..." },
@@ -355,7 +344,7 @@
               "action_plan": {
                 "ns_date": "MM/DD",
                 "opportunity": "A/B/C/D",
-                "optimization_content": "服務優化內容簡述 (個資需去識別化)"
+                "optimization_content": "服務優化內容簡述 (嚴禁提到姓名)"
               }
             }
         `;
@@ -368,12 +357,12 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
             if(btnElement) {
-                const originalIcon = btnElement.innerHTML;
-                btnElement.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>';
-                lucide.createIcons();
+                const originalText = btnElement.innerHTML;
+                btnElement.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> 已複製';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
                 setTimeout(() => {
-                    btnElement.innerHTML = originalIcon;
-                    lucide.createIcons();
+                    btnElement.innerHTML = originalText;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 }, 2000);
             }
         }
@@ -397,11 +386,10 @@
             const text = logInput.value.trim();
             const key = apiKeyInput.value.trim() || "";
 
-            if (!text) return alert("請輸入日誌內容");
+            if (!text) return;
 
             emptyState.classList.add('hidden');
             dashboardContent.classList.add('hidden');
-            exportBar.classList.add('hidden');
             loadingState.classList.remove('hidden');
             errorMsg.classList.add('hidden');
 
@@ -422,17 +410,12 @@
 
                 loadingState.classList.add('hidden');
                 dashboardContent.classList.remove('hidden');
-                exportBar.classList.remove('hidden');
                 dashboardContent.scrollIntoView({ behavior: 'smooth' });
             } catch (err) {
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
                 errorText.textContent = "分析失敗，請檢查 API Key 或網路連線。";
             }
-        });
-
-        pdfBtn.addEventListener('click', () => {
-            window.print();
         });
 
         function renderDashboard(data) {
@@ -477,9 +460,9 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // 修正 1：圓圈中僅呈現 DISC 的英文字
-            const discType = data.user_profile.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
-            document.getElementById('disc-badge').textContent = discType;
+            // 修正 1：圓圈中僅呈現 DISC 的第一個英文字母
+            const discInitial = data.user_profile.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
+            document.getElementById('disc-badge').textContent = discInitial;
             
             document.getElementById('personality-text').textContent = data.user_profile.personality;
             document.getElementById('needs-text').textContent = data.user_profile.core_need;
@@ -535,13 +518,9 @@
 
             const apFull = `【AP】NS ${data.action_plan.ns_date}；商機${data.action_plan.opportunity}；${data.action_plan.optimization_content}`;
             document.getElementById('ap-summary-text').textContent = apFull;
-            document.getElementById('ns-date').textContent = data.action_plan.ns_date;
-            document.getElementById('opportunity-level').textContent = data.action_plan.opportunity;
-            document.getElementById('optimization-focus').textContent = data.action_plan.optimization_content;
-
             document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apFull, document.getElementById('copy-ap-btn'));
 
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     </script>
 </body>
