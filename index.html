@@ -161,7 +161,7 @@
                             </div>
                             <div class="space-y-4">
                                 <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-2xl border border-slate-200">
-                                    <!-- 修正 1：文字設為純白，避免與 indigo 背景衝突 -->
+                                    <!-- 修正 1：文字強制設為純白 text-white，確保在 indigo 背景上清晰 -->
                                     <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-black text-white shadow-inner">
                                         -
                                     </div>
@@ -283,9 +283,10 @@
         const errorMsg = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
 
+        // 整合 2022-2025 大數據知識庫摘要 (保護隱私)
         const historicalInsights = `
             2022-2025 年度大數據趨勢分析：
-            1. 2022-2023 特徵：振興券政策拉力與口罩通訊壓力。
+            1. 2022-2023 特徵：振興券政策對選配有顯著拉力；口罩配戴時期導致聽損者通訊壓力劇增。
             2. 2024 高頻失敗點：多人聚會溝通困難、聲音適應期過短、試用後流失。
             3. 2025 成交關鍵：掌握補助進度與家屬數據對比。
         `;
@@ -293,10 +294,10 @@
         const systemPrompt = `
             你是一位助聽器領域頂尖督導。請分析日誌，並遵守以下嚴格規則：
             1. 絕對禁止出現姓名。
-            2. 專業驗證計畫 (professional_checks) 必須且僅包含這三項：
-               - REM 真耳分析
-               - SRT 字詞測驗
-               - 情境模擬演練
+            2. ⚠️ 修正 2：專業驗證計畫 (professional_checks) 必須且僅包含這三項固定分類：
+               - "REM 真耳分析"
+               - "SRT 字詞測驗"
+               - "情境模擬演練"
             
             回傳 JSON：
             {
@@ -375,15 +376,17 @@
 
                 loadingState.classList.add('hidden');
                 dashboardContent.classList.remove('hidden');
+                dashboardContent.scrollIntoView({ behavior: 'smooth' });
             } catch (err) {
                 console.error(err);
                 loadingState.classList.add('hidden');
                 errorMsg.classList.remove('hidden');
-                errorText.textContent = "分析失敗，請檢查 API Key。";
+                errorText.textContent = "分析失敗，請檢查 API Key 或網路連線。";
             }
         });
 
         function renderDashboard(data) {
+            // KPI 更新
             document.getElementById('score-val').textContent = `${data.service_score}/5`;
             document.getElementById('conversion-val').textContent = `${data.conversion_chance}%`;
             document.getElementById('conversion-bar').style.width = `${data.conversion_chance}%`;
@@ -400,6 +403,7 @@
                 trend.className = "text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-700";
             }
 
+            // 失敗因子
             const failedContainer = document.getElementById('failed-keys-container');
             failedContainer.innerHTML = '';
             (data.failed_keys || []).forEach(key => {
@@ -411,6 +415,7 @@
                 `;
             });
 
+            // 圓餅圖
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if (scoreChartInstance) scoreChartInstance.destroy();
             scoreChartInstance = new Chart(ctx, {
@@ -425,16 +430,18 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // 修正 1：文字設為 white
+            // 修正 1：用戶畫像 (僅英文字母)，並確保文字類別為 text-white 提高對比
             const discInitial = data.user_profile?.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
-            document.getElementById('disc-badge').textContent = discInitial;
-            document.getElementById('disc-badge').classList.add('text-white');
+            const discBadge = document.getElementById('disc-badge');
+            discBadge.textContent = discInitial;
+            // 雙重確認顏色類別存在
+            if (!discBadge.classList.contains('text-white')) discBadge.classList.add('text-white');
             
             document.getElementById('personality-text').textContent = data.user_profile?.personality || "N/A";
             document.getElementById('needs-text').textContent = data.user_profile?.core_need || "N/A";
             document.getElementById('staff-action-text').textContent = data.user_profile?.staff_instruction || "N/A";
 
-            // 修正 2：呈現三項補測計畫
+            // 修正 2：呈現標準三項補測計畫
             const checksContainer = document.getElementById('checks-container');
             checksContainer.innerHTML = '';
             (data.professional_checks || []).forEach(check => {
@@ -450,9 +457,11 @@
                 `;
             });
 
+            // 話術與策略
             document.getElementById('sales-script').textContent = `「${data.strategy?.script || ''}」`;
             document.getElementById('script-logic').textContent = data.strategy?.logic || '';
             
+            // 追蹤計畫
             const followupContainer = document.getElementById('followup-container');
             followupContainer.innerHTML = '';
             const labels = { t24h: '24H 關懷', d7: '7D 追蹤', d14: '14D 轉介' };
@@ -471,6 +480,7 @@
                 });
             }
 
+            // 更新 Action Plan 摘要文字
             if (data.action_plan) {
                 const ap = data.action_plan;
                 const apSummary = `【AP】NS ${ap.ns_date}；商機${ap.opportunity}；${ap.optimization_content}`;
@@ -478,6 +488,7 @@
                 document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apSummary, document.getElementById('copy-ap-btn'));
             }
 
+            // 流程細節修正
             const gapsContainer = document.getElementById('gaps-container');
             gapsContainer.innerHTML = '';
             (data.gaps || []).forEach((g, i) => {
