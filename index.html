@@ -8,11 +8,14 @@
     <!-- 讀取根目錄的 favicon.png -->
     <link rel="icon" href="favicon.png" type="image/png">
 
-    <!-- 修正外部腳本引用 -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
-    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
-    <link href="[https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap](https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap)" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
@@ -161,8 +164,7 @@
                             </div>
                             <div class="space-y-4">
                                 <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-2xl border border-slate-200">
-                                    <!-- 修正 1：文字強制設為純白 text-white，確保在 indigo 背景上清晰 -->
-                                    <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-black text-white shadow-inner">
+                                    <div id="disc-badge" class="w-12 h-12 shrink-0 rounded-full bg-indigo-600 border-2 border-indigo-200 flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
                                         -
                                     </div>
                                     <div>
@@ -253,6 +255,21 @@
                                     【AP】加載中...
                                 </p>
                             </div>
+
+                            <div class="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                                <div class="text-center">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">Next Stage</p>
+                                    <p id="ns-date" class="text-white font-black text-lg">-</p>
+                                </div>
+                                <div class="text-center border-x border-white/10">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">商機等級</p>
+                                    <p id="opportunity-level" class="text-white font-black text-lg">-</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[10px] text-indigo-300 font-black uppercase mb-1">優化焦點</p>
+                                    <p id="optimization-focus" class="text-white font-bold text-sm truncate px-1">-</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -287,32 +304,46 @@
         const historicalInsights = `
             2022-2025 年度大數據趨勢分析：
             1. 2022-2023 特徵：振興券政策對選配有顯著拉力；口罩配戴時期導致聽損者通訊壓力劇增。
-            2. 2024 高頻失敗點：多人聚會溝通困難、聲音適應期過短、試用後流失。
-            3. 2025 成交關鍵：掌握補助進度與家屬數據對比。
+            2. 2024 高頻失敗點：多人聚會溝通困難、聲音適應期過短、試用後因親友介紹它牌流失。
+            3. 2025 成交關鍵：掌握補助申請進度、對耳內機的外觀堅持、以及對技術數據對比的信任度。
         `;
 
         const systemPrompt = `
-            你是一位助聽器領域頂尖督導。請分析日誌，並遵守以下嚴格規則：
-            1. 絕對禁止出現姓名。
-            2. ⚠️ 修正 2：專業驗證計畫 (professional_checks) 必須且僅包含這三項固定分類：
-               - "REM 真耳分析"
-               - "SRT 字詞測驗"
-               - "情境模擬演練"
+            你是一位助聽器與正壓呼吸器領域的頂尖督導。
+            你有權存取「2022-2025 跨年度歷史日誌大數據」(背景洞察：${historicalInsights})。
             
-            回傳 JSON：
+            ⚠️ 嚴格隱私指令：
+            嚴禁在輸出內容中出現姓名。請統一使用「用戶」或「家屬」。
+            
+            嚴格回傳 JSON 格式，且必須包含 action_plan 對象：
             {
               "service_score": 數字(1-5),
               "conversion_chance": 數字(1-100),
-              "failed_keys": ["因素1", "因素2"],
-              "user_profile": { "disc": "D/I/S/C", "personality": "性格", "core_need": "描述", "staff_instruction": "建議" },
+              "failed_keys": ["關鍵1", "關鍵2"],
+              "user_profile": {
+                "disc": "D/I/S/C",
+                "personality": "關鍵字",
+                "core_need": "需求描述",
+                "staff_instruction": "建議內容"
+              },
               "professional_checks": [
-                { "label": "REM 真耳分析", "executed": boolean, "next_step_plan": "原因與計畫" },
-                { "label": "SRT 字詞測驗", "executed": boolean, "next_step_plan": "原因與計畫" },
-                { "label": "情境模擬演練", "executed": boolean, "next_step_plan": "原因與計畫" }
+                { "label": "項目名", "executed": boolean, "next_step_plan": "描述" }
               ],
               "gaps": [{"issue": "缺口", "action": "修正"}],
-              "strategy": { "script": "話術", "logic": "分析", "follow_up": { "t24h": { "action": "動作", "sms": "內容" }, "d7": { "action": "動作", "sms": "內容" }, "d14": { "action": "動作", "sms": "內容" } } },
-              "action_plan": { "ns_date": "MM/DD", "opportunity": "A/B/C/D", "optimization_content": "優化焦點" }
+              "strategy": {
+                "script": "對客話術",
+                "logic": "分析邏輯",
+                "follow_up": {
+                  "t24h": { "action": "動作", "sms": "簡訊內容" },
+                  "d7": { "action": "動作", "sms": "內容" },
+                  "d14": { "action": "動作", "sms": "內容" }
+                }
+              },
+              "action_plan": {
+                "ns_date": "MM/DD",
+                "opportunity": "A/B/C/D",
+                "optimization_content": "一句話優化焦點"
+              }
             }
         `;
 
@@ -352,6 +383,7 @@
         analyzeBtn.addEventListener('click', async () => {
             const text = logInput.value.trim();
             const key = apiKeyInput.value.trim() || "";
+
             if (!text) return;
 
             emptyState.classList.add('hidden');
@@ -430,18 +462,14 @@
                 options: { cutout: '80%', animation: false, plugins: { legend: { display: false } } }
             });
 
-            // 修正 1：用戶畫像 (僅英文字母)，並確保文字類別為 text-white 提高對比
+            // 用戶畫像 (僅英文字母)
             const discInitial = data.user_profile?.disc ? data.user_profile.disc.charAt(0).toUpperCase() : "-";
-            const discBadge = document.getElementById('disc-badge');
-            discBadge.textContent = discInitial;
-            // 雙重確認顏色類別存在
-            if (!discBadge.classList.contains('text-white')) discBadge.classList.add('text-white');
-            
+            document.getElementById('disc-badge').textContent = discInitial;
             document.getElementById('personality-text').textContent = data.user_profile?.personality || "N/A";
             document.getElementById('needs-text').textContent = data.user_profile?.core_need || "N/A";
             document.getElementById('staff-action-text').textContent = data.user_profile?.staff_instruction || "N/A";
 
-            // 修正 2：呈現標準三項補測計畫
+            // 專業檢測
             const checksContainer = document.getElementById('checks-container');
             checksContainer.innerHTML = '';
             (data.professional_checks || []).forEach(check => {
@@ -480,11 +508,17 @@
                 });
             }
 
-            // 更新 Action Plan 摘要文字
+            // 修正：顯式更新底部三個 Action Plan 欄位
             if (data.action_plan) {
                 const ap = data.action_plan;
                 const apSummary = `【AP】NS ${ap.ns_date}；商機${ap.opportunity}；${ap.optimization_content}`;
                 document.getElementById('ap-summary-text').textContent = apSummary;
+                
+                // 結構化數據精確填寫
+                document.getElementById('ns-date').textContent = ap.ns_date || "-";
+                document.getElementById('opportunity-level').textContent = ap.opportunity || "-";
+                document.getElementById('optimization-focus').textContent = ap.optimization_content || "-";
+                
                 document.getElementById('copy-ap-btn').onclick = () => copyToClipboard(apSummary, document.getElementById('copy-ap-btn'));
             }
 
